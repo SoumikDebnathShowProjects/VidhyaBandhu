@@ -38,6 +38,7 @@ function Navbar() {
 
   const [subLinks, setSubLinks] = useState([])
   const [loading, setLoading] = useState(false)
+const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     ;(async () => {
@@ -156,8 +157,72 @@ function Navbar() {
           {token !== null && <ProfileDropdown />}
         </div>
         <button className="mr-4 md:hidden">
-          <AiOutlineMenu fontSize={24} fill="#AFB2BF" />
+          <AiOutlineMenu fontSize={24} fill="#AFB2BF" onClick={()=>{setIsMenuOpen(!isMenuOpen)}}/>
         </button>
+            {/* ✅ Mobile menu dropdown */}
+    {isMenuOpen && (
+      <div className="absolute top-14 left-0 w-full bg-richblack-900 md:hidden z-[999]">
+        <ul className="flex flex-col gap-4 p-4 text-richblack-25">
+          {NavbarLinks.map((link, index) => (
+            <li key={index}>
+              {link.title === "Catalog" ? (
+                <details>
+                  <summary className="cursor-pointer">{link.title}</summary>
+                  <ul className="ml-4 mt-2 flex flex-col gap-2">
+                    {loading ? (
+                      <p className="text-center">Loading...</p>
+                    ) : subLinks.length ? (
+                      subLinks
+                        ?.filter(
+                          (subLink) =>
+                            Array.isArray(subLink?.courses) &&
+                            subLink.courses.length > 0
+                        )
+                        ?.map((subLink, i) => (
+                          <Link
+                            to={`/catalog/${subLink.name
+                              .split(" ")
+                              .join("-")
+                              .toLowerCase()}`}
+                            key={i}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {subLink.name}
+                          </Link>
+                        ))
+                    ) : (
+                      <p className="text-center">No Courses Found</p>
+                    )}
+                  </ul>
+                </details>
+              ) : (
+                <Link
+                  to={link?.path}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {link.title}
+                </Link>
+              )}
+            </li>
+          ))}
+
+          {/* Auth buttons */}
+          {token === null ? (
+            <>
+              <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                Log in
+              </Link>
+              <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                Sign up
+              </Link>
+            </>
+          ) : (
+            <ProfileDropdown />
+          )}
+        </ul>
+      </div>
+    )}
+
       </div>
     </div>
   )
