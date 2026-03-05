@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const otpGenerator = require("otp-generator")
 const mailSender = require("../utils/mailSender")
 const { passwordUpdated } = require("../mail/templates/passwordUpdate")
+const otpTemplate = require("../mail/templates/emailVerificationTemplate")
 const Profile = require("../models/Profile")
 require("dotenv").config()
 
@@ -214,12 +215,28 @@ exports.sendotp = async (req, res) => {
       })
     }
     const otpPayload = { email, otp }
-    const otpBody = await OTP.create(otpPayload)
-    console.log("OTP Body", otpBody)
+    await OTP.create(otpPayload)
+
+    // Send OTP to user's email
+    const emailResult = await mailSender(
+      email,
+      "VidhyaBandhu - OTP for Email Verification",
+      otpTemplate(otp)
+    )
+
+    // mailSender returns error message (string) on failure, nodemailer info object on success
+    if (!emailResult || typeof emailResult === "string") {
+      console.error("OTP email send failed:", emailResult)
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email. Please check mail configuration or try again.",
+        error: emailResult || "Mail send failed",
+      })
+    }
+
     res.status(200).json({
       success: true,
       message: `OTP Sent Successfully`,
-      otp,
     })
   } catch (error) {
     console.log(error.message)

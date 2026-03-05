@@ -443,11 +443,20 @@ exports.getInstructorCourses = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.body
+    const userId = req.user.id
 
     // Find the course
     const course = await Course.findById(courseId)
     if (!course) {
-      return res.status(404).json({ message: "Course not found" })
+      return res.status(404).json({ success: false, message: "Course not found" })
+    }
+
+    // Only the instructor who created the course can delete it
+    if (course.instructor.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this course",
+      })
     }
 
     // Unenroll students from the course

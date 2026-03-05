@@ -83,8 +83,8 @@ router.post("/getFullCourseDetails", auth, getFullCourseDetails)
 router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 // To get Course Progress
 // router.post("/getProgressPercentage", auth, isStudent, getProgressPercentage)
-// Delete a Course
-router.delete("/deleteCourse", deleteCourse)
+// Delete a Course (only course owner)
+router.delete("/deleteCourse", auth, isInstructor, deleteCourse)
 
 // ********************************************************************************************************
 //                                      Category routes (Only by Admin)
